@@ -10,7 +10,8 @@ var HarvesterSchema = new mongoose.Schema({
 	step_ms: String,
 	oillevel: String,
 	fuellevel: String,
-	pressure: String
+	pressure: String,
+	location: String
 
 });
 

@@ -8,6 +8,7 @@ var Harvester = require('./models/harvester');
 var Pressure = require('./models/pressure');
 var Oillevel = require('./models/oillevel');
 var Fuellevel = require('./models/fuellevel');
+var Location = require('./models/location');
 var cookieParser = require('cookie-parser');
 
 //to avoid mongoose promise error
@@ -27,7 +28,7 @@ app.use(bodyParser.urlencoded({
 app.use(morgan('dev'));
 
 // Use environment defined port or 3000
-var port = process.env.PORT || 80;
+var port = process.env.PORT || 8080;
 
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json()); 
@@ -38,7 +39,7 @@ var router = express.Router();
 // Initial dummy route for testing
 // http://localhost:3000/api
 router.get('/', function(req, res) {
-	var obj = 'http://localhost:80/api/harvesters/';
+	var obj = 'http://localhost:8080/api/harvesters/';
   res.json([{message: 'List of Harvesters', data: obj}]);
 });
 
@@ -53,9 +54,10 @@ harvestersRoute.post(function(req, res) {
   // Set the beer properties that came from the POST data
   harvester.id = req.body.id;
   harvester.step_ms = req.body.step_ms;
-  harvester.oillevel = 'http://localhost:80/api/harvesters/oillevel';
-  harvester.fuellevel = 'http://localhost:80/api/harvesters/fuellevel';
-  harvester.pressure = 'http://localhost:80/api/harvesters/pressure';
+  harvester.oillevel = 'http://localhost:8080/api/harvesters/oillevel';
+  harvester.fuellevel = 'http://localhost:8080/api/harvesters/fuellevel';
+  harvester.pressure = 'http://localhost:8080/api/harvesters/pressure';
+  harvester.location = 'http://localhost:8080/api/harvesters/location';
 
 
   // Save the harvester and check for errors
@@ -133,6 +135,28 @@ fuellevelHarvestersRoute.get(function(req, res){
   });
 });
 
+//creating new route using endpoint /harvesters/location for POST
+var locationHarvestersRoute = router.route('/harvesters/location');
+locationHarvestersRoute.post(function(req, res){
+  var location = new Location();
+  location.latitude = req.body.latitude;
+  location.longitude = req.body.longitude;
+
+  location.save(function(err){
+    if (err)
+      res.send(err);
+    res.json({ message: 'Haraverster data', data: location });
+  });
+});
+
+//creating new route using endpoint /harvesters/location for GET
+locationHarvestersRoute.get(function(req, res){
+  Location.find(function(err, location){
+    if(err)
+      res.send(err);
+    res.json(location);
+  });
+});
 
 // -- New Code Below Here -- //
 
@@ -172,7 +196,6 @@ harvesterRoute.delete(function(req, res) {
     res.json({ message: 'Harvester data removed' });
   });
 });
-
 
 // Register all our routes with /api
 app.use('/api', router);
